@@ -1,6 +1,6 @@
 {
-  "name": "@element-hq/element-call-embedded",
-  "version": "0.0.0",
+  "name": "@nexryai/element-call-embedded",
+  "version": "0.0.1",
   "files": [
     "README.md",
     "LICENSE-AGPL-3.0",
@@ -9,6 +9,6 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/element-hq/element-call.git"
+    "url": "git+https://github.com/nexryai/element-call.git"
   }
 }
