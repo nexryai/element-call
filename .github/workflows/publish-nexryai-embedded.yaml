@@ -47,4 +47,4 @@ jobs:
 
       - name: Publish
         working-directory: embedded/web
-        run: npm publish --provenance --access public ${{ github.event_name != 'release' && '--dry-run' || '' }}
+        run: npm publish --provenance --access public
