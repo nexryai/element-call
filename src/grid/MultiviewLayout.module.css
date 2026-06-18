@@ -1,0 +1,50 @@
+/*
+Copyright 2024 New Vector Ltd.
+
+SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+Please see LICENSE in the repository root for full details.
+*/
+
+.layer {
+  block-size: 100%;
+  display: flex;
+  flex-direction: column;
+  --gap: 20px;
+  gap: var(--gap);
+  padding-inline: var(--gap);
+}
+
+.multiviewGrid {
+  flex: 1;
+  min-block-size: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  grid-template-rows: repeat(auto-fit, minmax(270px, 1fr));
+  gap: var(--gap);
+  place-items: center;
+}
+
+.multiviewGrid > .slot {
+  inline-size: 100%;
+  block-size: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+}
+
+.participantRail {
+  block-size: 120px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.participantRail > .slot {
+  inline-size: 160px;
+  block-size: 90px;
+  flex-shrink: 0;
+}

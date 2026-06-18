@@ -322,7 +322,7 @@ export const CallFooter: FC<FooterProps> = ({ ref, children, vm }) => {
           rightValue="grid"
           rightIcon={GridIcon}
           className={styles.layout}
-          value={layoutMode}
+          value={layoutMode === "multiview" ? "spotlight" : layoutMode}
           onChange={setLayoutMode}
         />
       )}

@@ -13,11 +13,13 @@ import { testScope, withTestScheduler } from "../../utils/test";
 function testLayoutSwitch({
   windowMode = "n",
   hasScreenShares = "n",
+  hasMultipleScreenShares = "n",
   userSelection = "",
   expectedGridMode,
 }: {
   windowMode?: string;
   hasScreenShares?: string;
+  hasMultipleScreenShares?: string;
   userSelection?: string;
   expectedGridMode: string;
 }): void {
@@ -26,14 +28,17 @@ function testLayoutSwitch({
       testScope(),
       behavior(windowMode, { n: "normal", N: "narrow", f: "flat" }),
       behavior(hasScreenShares, { y: true, n: false }),
+      behavior(hasMultipleScreenShares, { y: true, n: false }),
     );
     schedule(userSelection, {
       g: () => setGridMode("grid"),
       s: () => setGridMode("spotlight"),
+      m: () => setGridMode("multiview"),
     });
     expectObservable(gridMode$).toBe(expectedGridMode, {
       g: "grid",
       s: "spotlight",
+      m: "multiview",
     });
   });
 }

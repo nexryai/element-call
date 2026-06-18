@@ -35,6 +35,9 @@ import {
 import { deepCompare } from "matrix-js-sdk/lib/utils";
 
 import { type Layout } from "../layout-types.ts";
+import { type MediaViewModel } from "../media/MediaViewModel.ts";
+import { type UserMediaViewModel } from "../media/UserMediaViewModel.ts";
+import { type RingingMediaViewModel } from "../media/RingingMediaViewModel.ts";
 import {
   mockMatrixRoomMember,
   mockRemoteParticipant,
@@ -160,6 +163,12 @@ export interface PipLayoutSummary {
   spotlight: string[];
 }
 
+export interface MultiviewLayoutSummary {
+  type: "multiview";
+  screenShares: string[][];
+  grid: string[];
+}
+
 export type LayoutSummary =
   | GridLayoutSummary
   | SpotlightLandscapeLayoutSummary
@@ -167,7 +176,8 @@ export type LayoutSummary =
   | SpotlightExpandedLayoutSummary
   | OneOnOneLandscapeLayoutSummary
   | OneOnOnePortraitLayoutSummary
-  | PipLayoutSummary;
+  | PipLayoutSummary
+  | MultiviewLayoutSummary;
 
 function summarizeLayout$(l$: Observable<Layout>): Observable<LayoutSummary> {
   return l$.pipe(
@@ -233,6 +243,22 @@ function summarizeLayout$(l$: Observable<Layout>): Observable<LayoutSummary> {
               type: l.type,
               spotlight: spotlight.map((vm) => vm.id),
             })),
+          );
+        case "multiview":
+          return combineLatest(
+            [
+              ...l.screenShares.map((vm) => vm.media$),
+              ...l.grid.map((vm) => vm.media$),
+            ],
+            (...all) => {
+              const screenShareMedias = all.slice(0, l.screenShares.length) as MediaViewModel[][];
+              const gridMedias = all.slice(l.screenShares.length) as (UserMediaViewModel | RingingMediaViewModel)[];
+              return {
+                type: l.type as "multiview",
+                screenShares: screenShareMedias.map((ss) => (ss as MediaViewModel[]).map((vm) => vm.id)),
+                grid: gridMedias.map((vm) => vm.id),
+              };
+            },
           );
       }
     }),
@@ -311,8 +337,8 @@ describe.each([
       // switch back to grid at the end
       const modeInputMarbles = "           -----s--g";
       // We should automatically enter spotlight for the first round of screen
-      // sharing, then return to grid, then manually go into spotlight, and
-      // remain in spotlight until we manually go back to grid
+      // sharing (multiview when 2 shares), then return to grid, then manually
+      // go into spotlight, and remain in spotlight until we manually go back to grid
       const expectedLayoutMarbles = "      abcdaefeg";
       const expectedShowSpeakingMarbles = "y----nyny";
       withCallViewModel(
@@ -344,10 +370,10 @@ describe.each([
                 grid: [`${localId}:0`, `${aliceId}:0`, `${bobId}:0`],
               },
               c: {
-                type: "spotlight-landscape",
-                spotlight: [
-                  `${aliceId}:0:screen-share`,
-                  `${bobId}:0:screen-share`,
+                type: "multiview",
+                screenShares: [
+                  [`${aliceId}:0:screen-share`],
+                  [`${bobId}:0:screen-share`],
                 ],
                 grid: [`${localId}:0`, `${aliceId}:0`, `${bobId}:0`],
               },

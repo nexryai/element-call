@@ -19,18 +19,22 @@ import { constant, type Behavior } from "../Behavior.ts";
 import { type ObservableScope } from "../ObservableScope.ts";
 
 /**
- * Creates a layout mode switch that allows switching between grid and spotlight modes.
+ * Creates a layout mode switch that allows switching between grid, spotlight,
+ * and multiview modes.
  * The actual layout mode might switch automatically to spotlight if there is a
  * remote screen share active or if the window mode is flat.
+ * When multiple remote screen shares are active, multiview mode is preferred.
  *
  * @param scope - The observable scope to manage subscriptions.
  * @param windowMode$ - The current window mode.
  * @param hasRemoteScreenShares$ - A behavior indicating if there are remote screen shares active.
+ * @param hasMultipleScreenShares$ - A behavior indicating if there are multiple remote screen shares active.
  */
 export function createLayoutModeSwitch(
   scope: ObservableScope,
   windowMode$: Behavior<WindowMode>,
   hasRemoteScreenShares$: Behavior<boolean>,
+  hasMultipleScreenShares$: Behavior<boolean>,
 ): {
   gridMode$: Behavior<GridMode>;
   setGridMode: (value: GridMode) => void;
@@ -47,14 +51,20 @@ export function createLayoutModeSwitch(
    */
   const naturalGridMode$ = scope.behavior<GridMode>(
     combineLatest(
-      [hasRemoteScreenShares$, windowMode$],
-      (hasRemoteScreenShares, windowMode) =>
+      [hasRemoteScreenShares$, hasMultipleScreenShares$, windowMode$],
+      (hasRemoteScreenShares, hasMultipleScreenShares, windowMode) => {
+        // When there are multiple remote screen shares, multiview is the
+        // best experience since it shows all of them simultaneously.
+        if (hasMultipleScreenShares && windowMode !== "flat" && windowMode !== "pip")
+          return "multiview";
         // When there are screen shares or the window is flat (as with a phone
         // in landscape orientation), spotlight is a better experience.
         // We want screen shares to be big and readable, and we want flipping
         // your phone into landscape to be a quick way of maximising the
         // spotlight tile.
-        hasRemoteScreenShares || windowMode === "flat" ? "spotlight" : "grid",
+        if (hasRemoteScreenShares || windowMode === "flat") return "spotlight";
+        return "grid";
+      },
     ),
   );
 

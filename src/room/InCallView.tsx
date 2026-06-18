@@ -55,6 +55,7 @@ import { makeOneOnOnePortraitLayout } from "../grid/OneOnOnePortraitLayout";
 import { makeSpotlightExpandedLayout } from "../grid/SpotlightExpandedLayout";
 import { makeSpotlightLandscapeLayout } from "../grid/SpotlightLandscapeLayout";
 import { makeSpotlightPortraitLayout } from "../grid/SpotlightPortraitLayout";
+import { makeMultiviewLayout } from "../grid/MultiviewLayout";
 import { GridTileViewModel, type TileViewModel } from "../state/TileViewModel";
 import {
   ReactionsSenderProvider,
@@ -499,6 +500,7 @@ export const InCallView: FC<InCallViewProps> = ({
       "spotlight-expanded": makeSpotlightExpandedLayout(inputs),
       "one-on-one-landscape": makeOneOnOneLandscapeLayout(inputs),
       "one-on-one-portrait": makeOneOnOnePortraitLayout(inputs),
+      multiview: makeMultiviewLayout(inputs),
     };
   }, [gridBoundsObservable$]);
 

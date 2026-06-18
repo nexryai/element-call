@@ -73,6 +73,7 @@ import { spotlightExpandedLayout } from "../SpotlightExpandedLayout";
 import { oneOnOneLandscapeLayout } from "../OneOnOneLandscapeLayout";
 import { oneOnOnePortraitLayout } from "../OneOnOnePortraitLayout";
 import { pipLayout } from "../PipLayout";
+import { multiviewLayout } from "../MultiviewLayoutHelper";
 import { type EncryptionSystem } from "../../e2ee/sharedKeyManagement";
 import {
   type RaisedHandInfo,
@@ -93,6 +94,7 @@ import {
   type GridLayoutMedia,
   type Layout,
   type LayoutMedia,
+  type MultiviewLayoutMedia,
   type OneOnOneLandscapeLayoutMedia,
   type OneOnOnePortraitLayoutMedia,
   type SpotlightExpandedLayoutMedia,
@@ -202,13 +204,15 @@ const smallMobileCallThreshold = 3;
 // with the interface
 const showFooterMs = 4000;
 
-export type GridMode = "grid" | "spotlight";
+export type GridMode = "grid" | "spotlight" | "multiview";
 
 export type WindowMode = "normal" | "narrow" | "flat" | "pip";
 
 interface LayoutScanState {
   layout: Layout | null;
   tiles: TileStore;
+  /** SpotlightTileVMs created for multiview screen shares, preserved across scans for reuse. */
+  prevScreenShareTiles: import("../TileViewModel").SpotlightTileViewModel[];
 }
 
 export type LivekitRoomItem = {
@@ -1025,6 +1029,14 @@ export function createCallViewModel$(
     ),
   );
 
+  const hasMultipleScreenShares$ = scope.behavior<boolean>(
+    screenShares$.pipe(
+      map((screenShares) =>
+        screenShares.filter((vm) => !vm.local).length >= 2,
+      ),
+    ),
+  );
+
   const pipEnabled$ = scope.behavior(setPipEnabled$, false);
 
   const windowSize$ =
@@ -1071,6 +1083,7 @@ export function createCallViewModel$(
     scope,
     windowMode$,
     hasRemoteScreenShares$,
+    hasMultipleScreenShares$,
   );
 
   const gridLayoutMedia$: Observable<GridLayoutMedia> = combineLatest(
@@ -1100,6 +1113,14 @@ export function createCallViewModel$(
       type: "spotlight-portrait",
       edgeToEdge: false,
       spotlight,
+      grid,
+    }));
+
+  const multiviewLayoutMedia$: Observable<MultiviewLayoutMedia> =
+    combineLatest([grid$, screenShares$], (grid, screenShares) => ({
+      type: "multiview" as const,
+      edgeToEdge: false as const,
+      screenShares,
       grid,
     }));
 
@@ -1255,6 +1276,8 @@ export function createCallViewModel$(
                           : spotlightLandscapeLayoutMedia$(false),
                       ),
                     );
+                  case "multiview":
+                    return multiviewLayoutMedia$;
                 }
               }),
             );
@@ -1281,6 +1304,10 @@ export function createCallViewModel$(
                     return spotlightLandscapeLayoutMedia$(true);
                   case "spotlight":
                     return spotlightExpandedLayoutMedia$(true);
+                  case "multiview":
+                    // Flat windows don't have enough room for multiview;
+                    // fall back to spotlight landscape.
+                    return spotlightLandscapeLayoutMedia$(true);
                 }
               }),
             );
@@ -1503,9 +1530,10 @@ export function createCallViewModel$(
         LayoutScanState & { layout: Layout },
         LayoutScanState
       >(
-        ({ tiles: prevTiles }, [media, visibleTiles]) => {
+        ({ tiles: prevTiles, prevScreenShareTiles }, [media, visibleTiles]) => {
           let layout: Layout;
           let newTiles: TileStore;
+          let newScreenShareTiles = prevScreenShareTiles;
           switch (media.type) {
             case "grid":
             case "spotlight-landscape":
@@ -1543,11 +1571,20 @@ export function createCallViewModel$(
             case "pip":
               [layout, newTiles] = pipLayout(media, prevTiles);
               break;
+            case "multiview":
+              [layout, newTiles, newScreenShareTiles] = multiviewLayout(
+                media,
+                visibleTiles,
+                setVisibleTiles,
+                prevTiles,
+                prevScreenShareTiles,
+              );
+              break;
           }
 
-          return { layout, tiles: newTiles };
+          return { layout, tiles: newTiles, prevScreenShareTiles: newScreenShareTiles };
         },
-        { layout: null, tiles: TileStore.empty() },
+        { layout: null, tiles: TileStore.empty(), prevScreenShareTiles: [] },
       ),
     ),
   );

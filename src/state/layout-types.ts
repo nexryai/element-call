@@ -65,6 +65,15 @@ export interface PipLayoutMedia {
   spotlight: MediaViewModel[];
 }
 
+export interface MultiviewLayoutMedia {
+  type: "multiview";
+  edgeToEdge: false;
+  /** Individual screen share streams, each shown as its own tile. */
+  screenShares: MediaViewModel[];
+  /** User media for the participant rail. */
+  grid: UserMediaViewModel[];
+}
+
 export type LayoutMedia =
   | GridLayoutMedia
   | SpotlightLandscapeLayoutMedia
@@ -72,7 +81,8 @@ export type LayoutMedia =
   | SpotlightExpandedLayoutMedia
   | OneOnOneLandscapeLayoutMedia
   | OneOnOnePortraitLayoutMedia
-  | PipLayoutMedia;
+  | PipLayoutMedia
+  | MultiviewLayoutMedia;
 
 export interface Alignment {
   inline: "start" | "end";
@@ -128,6 +138,15 @@ export interface PipLayout {
   spotlight: SpotlightTileViewModel;
 }
 
+export interface MultiviewLayout {
+  type: "multiview";
+  /** One SpotlightTileViewModel per screen share, each shown in its own tile. */
+  screenShares: SpotlightTileViewModel[];
+  /** Participant grid tiles shown in a rail. */
+  grid: GridTileViewModel[];
+  setVisibleTiles: (value: number) => void;
+}
+
 /**
  * A layout defining the media tiles present on screen and their visual
  * arrangement.
@@ -139,4 +158,5 @@ export type Layout =
   | SpotlightExpandedLayout
   | OneOnOneLandscapeLayout
   | OneOnOnePortraitLayout
-  | PipLayout;
+  | PipLayout
+  | MultiviewLayout;
