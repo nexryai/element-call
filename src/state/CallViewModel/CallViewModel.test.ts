@@ -370,10 +370,10 @@ describe.each([
                 grid: [`${localId}:0`, `${aliceId}:0`, `${bobId}:0`],
               },
               c: {
-                type: "multiview",
-                screenShares: [
-                  [`${aliceId}:0:screen-share`],
-                  [`${bobId}:0:screen-share`],
+                type: "spotlight-landscape",
+                spotlight: [
+                  `${aliceId}:0:screen-share`,
+                  `${bobId}:0:screen-share`,
                 ],
                 grid: [`${localId}:0`, `${aliceId}:0`, `${bobId}:0`],
               },

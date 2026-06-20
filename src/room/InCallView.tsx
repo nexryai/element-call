@@ -478,6 +478,7 @@ export const InCallView: FC<InCallViewProps> = ({
             vm={model}
             expanded={spotlightExpanded}
             onToggleExpanded={onToggleExpanded}
+            onMultiviewClick={() => vm.setGridMode("multiview")}
             targetWidth={targetWidth}
             targetHeight={targetHeight}
             showIndicators={showSpotlightIndicators}

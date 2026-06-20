@@ -53,10 +53,6 @@ export function createLayoutModeSwitch(
     combineLatest(
       [hasRemoteScreenShares$, hasMultipleScreenShares$, windowMode$],
       (hasRemoteScreenShares, hasMultipleScreenShares, windowMode) => {
-        // When there are multiple remote screen shares, multiview is the
-        // best experience since it shows all of them simultaneously.
-        if (hasMultipleScreenShares && windowMode !== "flat" && windowMode !== "pip")
-          return "multiview";
         // When there are screen shares or the window is flat (as with a phone
         // in landscape orientation), spotlight is a better experience.
         // We want screen shares to be big and readable, and we want flipping
