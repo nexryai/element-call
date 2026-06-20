@@ -32,7 +32,7 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-pnpmfile
 
       - name: Build
-        run: build:embedded:production
+        run: pnpm build:embedded:production
         env:
           NODE_OPTIONS: --max-old-space-size=4096
 
