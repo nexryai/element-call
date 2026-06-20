@@ -458,6 +458,7 @@ export const InCallView: FC<InCallViewProps> = ({
         );
         const showSpeakingIndicators = useBehavior(vm.showSpeakingIndicators$);
         const showNameTags = useBehavior(vm.showNameTags$);
+        const gridMode = useBehavior(vm.gridMode$);
 
         return model instanceof GridTileViewModel ? (
           <GridTile
@@ -479,6 +480,17 @@ export const InCallView: FC<InCallViewProps> = ({
             expanded={spotlightExpanded}
             onToggleExpanded={onToggleExpanded}
             onMultiviewClick={() => vm.setGridMode("multiview")}
+            onSpotlightClick={
+              gridMode === "multiview"
+                ? () => {
+                    const media = model.media$.value;
+                    if (media.length > 0) {
+                      vm.setFocusedScreenShareId(media[0].id);
+                      vm.setGridMode("spotlight");
+                    }
+                  }
+                : undefined
+            }
             targetWidth={targetWidth}
             targetHeight={targetHeight}
             showIndicators={showSpotlightIndicators}

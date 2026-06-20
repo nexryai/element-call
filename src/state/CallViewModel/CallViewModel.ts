@@ -351,6 +351,7 @@ export interface CallViewModel {
   toggleSpotlightExpanded$: Behavior<(() => void) | null>;
   gridMode$: Behavior<GridMode>;
   setGridMode: (value: GridMode) => void;
+  setFocusedScreenShareId: (id: string | undefined) => void;
 
   // header/footer visibility
   showHeader$: Behavior<boolean>;
@@ -985,6 +986,11 @@ export function createCallViewModel$(
     ),
   );
 
+  const focusedScreenShareId$ = new BehaviorSubject<string | undefined>(undefined);
+  const setFocusedScreenShareId = (id: string | undefined): void => {
+    focusedScreenShareId$.next(id);
+  };
+
   const spotlightAndPip$ = scope.behavior<{
     spotlight: MediaViewModel[];
     pip$: Observable<UserMediaViewModel | undefined>;
@@ -996,8 +1002,20 @@ export function createCallViewModel$(
 
         return screenShares$.pipe(
           switchMap((screenShares) => {
-            if (screenShares.length > 0)
-              return of({ spotlight: screenShares, pip$: spotlightSpeaker$ });
+            if (screenShares.length > 0) {
+              return focusedScreenShareId$.pipe(
+                switchMap(focusedId => {
+                  let sortedShares = screenShares;
+                  if (focusedId) {
+                    const idx = screenShares.findIndex(s => s.id === focusedId);
+                    if (idx > 0) {
+                      sortedShares = [screenShares[idx], ...screenShares.slice(0, idx), ...screenShares.slice(idx + 1)];
+                    }
+                  }
+                  return of({ spotlight: sortedShares, pip$: spotlightSpeaker$ });
+                })
+              );
+            }
 
             return spotlightSpeaker$.pipe(
               map((speaker) => ({
@@ -1810,6 +1828,7 @@ export function createCallViewModel$(
     toggleSpotlightExpanded$: toggleSpotlightExpanded$,
     gridMode$: gridMode$,
     setGridMode: setGridMode,
+    setFocusedScreenShareId: setFocusedScreenShareId,
     layout$: layout$,
     localMatrixLivekitMember$,
     matrixLivekitMembers$: scope.behavior(

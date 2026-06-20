@@ -28,6 +28,7 @@ import {
   VoiceCallSolidIcon,
   EndCallIcon,
   GridIcon,
+  SpotlightIcon,
 } from "@vector-im/compound-design-tokens/assets/web/icons";
 import { animated } from "@react-spring/web";
 import { type Observable, map } from "rxjs";
@@ -384,6 +385,7 @@ interface Props {
   expanded: boolean;
   onToggleExpanded: (() => void) | null;
   onMultiviewClick?: () => void;
+  onSpotlightClick?: () => void;
   targetWidth: number;
   targetHeight: number;
   showIndicators: boolean;
@@ -399,6 +401,7 @@ export const SpotlightTile: FC<Props> = ({
   expanded,
   onToggleExpanded,
   onMultiviewClick,
+  onSpotlightClick,
   targetWidth,
   targetHeight,
   showIndicators,
@@ -529,6 +532,16 @@ export const SpotlightTile: FC<Props> = ({
       <div className={styles.bottomRightButtons}>
         {visibleMedia?.type === "screen share" && !visibleMedia.local && (
           <ScreenShareVolumeButton vm={visibleMedia} />
+        )}
+        {onSpotlightClick && (
+          <button
+            className={classNames(styles.expand)}
+            aria-label={"spotlight"}
+            onClick={onSpotlightClick}
+            tabIndex={focusable ? undefined : -1}
+          >
+            <SpotlightIcon aria-hidden width={20} height={20} />
+          </button>
         )}
         {visibleMedia?.type === "screen share" && media.length > 1 && onMultiviewClick && (
           <button
